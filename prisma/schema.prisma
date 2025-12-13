@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums
+enum UserRole {
+  USER
+  REVIEWER
+  ADMIN
+}
+
+enum Difficulty {
+  NEWBIE
+  JUNIOR
+  INTERMEDIATE
+  ADVANCED
+  GURU
+}
+
+enum SubmissionStatus {
+  PENDING
+  RUNNING
+  FAILED
+  PASSED
+}
+
+enum AssetKind {
+  IMAGE
+  ZIP
+  SPEC
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  INCOMPLETE
+}
+
+// Models
+model User {
+  id            String    @id @default(cuid())
+  githubId      String    @unique
+  email         String?   @unique
+  name          String?
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  subscriptions Subscription[]
+  submissions   Submission[]
+  reviews       Review[]   @relation("UserReviews")
+  installations GithubInstallation[]
+}
+
+model Subscription {
+  id               String             @id @default(cuid())
+  userId           String
+  plan             SubscriptionPlan   @default(FREE)
+  status           SubscriptionStatus @default(INCOMPLETE)
+  currentPeriodEnd DateTime?
+  stripeCustomerId String?
+  stripeSubId      String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model GithubInstallation {
+  id             String  @id @default(cuid())
+  userId         String
+  installationId BigInt  @unique
+  reposJson      Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Challenge {
+  id                  String     @id @default(cuid())
+  slug                String     @unique
+  title_en            String
+  title_ar            String
+  summary_en          String
+  summary_ar          String
+  longDescription_en  String
+  longDescription_ar  String
+  difficulty          Difficulty
+  tags                String[]   @default([])
+  isPremium           Boolean    @default(false)
+  kitPackage          String?
+  kitVersion          String?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  assets      ChallengeAsset[]
+  submissions Submission[]
+}
+
+model ChallengeAsset {
+  id          String    @id @default(cuid())
+  challengeId String
+  kind        AssetKind
+  url         String
+  sizeBytes   Int?
+  createdAt   DateTime  @default(now())
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@index([challengeId])
+}
+
+model Submission {
+  id             String           @id @default(cuid())
+  userId         String
+  challengeId    String
+  repoUrl        String
+  branch         String?
+  lastCommitSha  String?
+  ciProvider     String           @default("github")
+  status         SubmissionStatus @default(PENDING)
+  score          Int?
+  resultsJson    Json?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  reviews   Review[]
+
+  @@index([userId])
+  @@index([challengeId])
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  submissionId String
+  reviewerId   String
+  rubricJson   Json
+  comments     String?
+  verdict      String   // "APPROVE" | "CHANGES"
+  createdAt    DateTime @default(now())
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  reviewer   User       @relation("UserReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@index([reviewerId])
+}
+
