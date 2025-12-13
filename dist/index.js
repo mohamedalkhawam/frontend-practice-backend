@@ -51,7 +51,5 @@ app.use((err, _req, res, _next) => {
     logger.error({ err }, 'Unhandled error');
     res.status(500).json({ error: 'internal_error' });
 });
-const port = Number(process.env.PORT || 4000);
-app.listen(port, () => {
-    logger.info(`API listening on http://localhost:${port}`);
-});
+// For Vercel serverless: export the express app as the default handler.
+export default app;
