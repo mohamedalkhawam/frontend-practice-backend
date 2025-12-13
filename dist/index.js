@@ -49,7 +49,9 @@ app.use('/challenges', challengesRouter);
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err, _req, res, _next) => {
     logger.error({ err }, 'Unhandled error');
-    res.status(500).json({ error: 'internal_error' });
+    res.statusCode = 500;
+    res.setHeader('content-type', 'application/json');
+    res.end(JSON.stringify({ error: 'internal_error' }));
 });
 // For Vercel serverless: export the express app as the default handler.
 export default app;

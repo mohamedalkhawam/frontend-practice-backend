@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 import pino from 'pino';
 import i18next from 'i18next';
 import * as i18nextMiddleware from 'i18next-http-middleware';
+import type {Request, Response, NextFunction} from 'express';
 import {router as challengesRouter} from './routes/challenges.js';
 import {router as healthRouter} from './routes/health.js';
 
@@ -58,9 +59,11 @@ app.use('/challenges', challengesRouter);
 
 // error handler
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   logger.error({err}, 'Unhandled error');
-  res.status(500).json({error: 'internal_error'});
+  res.statusCode = 500;
+  res.setHeader('content-type', 'application/json');
+  res.end(JSON.stringify({error: 'internal_error'}));
 });
 
 // For Vercel serverless: export the express app as the default handler.

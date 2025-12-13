@@ -1,4 +1,5 @@
 import {Router} from 'express';
+import type {Request, Response} from 'express';
 import {z} from 'zod';
 import {prisma} from '../db.js';
 
@@ -15,7 +16,7 @@ const challenge = z.object({
   isPremium: z.boolean()
 });
 
-router.get('/', async (_req, res) => {
+router.get('/', async (_req: Request, res: Response) => {
   const items = await prisma.challenge.findMany({
     select: {
       id: true,
@@ -33,7 +34,7 @@ router.get('/', async (_req, res) => {
   res.json({items});
 });
 
-router.get('/:slug', (req, res) => {
+router.get('/:slug', (req: Request, res: Response) => {
   // TODO: fetch from DB by slug
   const {slug} = req.params;
   res.json({
