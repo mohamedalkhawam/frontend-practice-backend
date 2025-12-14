@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -9,16 +10,6 @@ import * as i18nextMiddleware from 'i18next-http-middleware';
 import type {Request, Response, NextFunction} from 'express';
 import {router as challengesRouter} from './routes/challenges.js';
 import {router as healthRouter} from './routes/health.js';
-import dotenv from "dotenv";
-
-
-process.on("uncaughtException", err => {
-  console.log(err.name, err.message);
-  console.log("UNCAUGHT EXCEPTION! Shutting down...");
-  process.exit(1);
-});
-
-dotenv.config({ path: "./.env" });
 
 const logger = pino({level: process.env.LOG_LEVEL || 'info'});
 const app = express();
@@ -75,9 +66,7 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   res.end(JSON.stringify({error: err}));
 });
 
+// For Vercel serverless: export the express app as the default handler.
+export default app;
 
-const port = Number(process.env.PORT || 4000);
-app.listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`API listening on http://localhost:${port}`);
-});
+
