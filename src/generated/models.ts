@@ -8,11 +8,11 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/User'
-export type * from './models/Subscription'
-export type * from './models/GithubInstallation'
-export type * from './models/Challenge'
-export type * from './models/ChallengeAsset'
-export type * from './models/Submission'
-export type * from './models/Review'
-export type * from './commonInputTypes'
+export type * from './models/User.js'
+export type * from './models/Subscription.js'
+export type * from './models/GithubInstallation.js'
+export type * from './models/Challenge.js'
+export type * from './models/ChallengeAsset.js'
+export type * from './models/Submission.js'
+export type * from './models/Review.js'
+export type * from './commonInputTypes.js'
